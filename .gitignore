@@ -1,0 +1,17 @@
+# compiled Java files
+*.class
+
+# build folder
+out/
+
+# IDE
+.idea/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# logs
+*.log
+datasets/digits/digits/
