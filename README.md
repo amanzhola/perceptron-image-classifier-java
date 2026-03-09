@@ -432,7 +432,7 @@ training/
 testing/
 ```
 
-# ⚠️ Важно: распаковка архивов `training.zip` и `testing.zip`
+⚠️ Важно: распаковка архивов `training.zip` и `testing.zip`
 
 Пример распаковки:
 
@@ -709,6 +709,17 @@ jar:file:digits.jar!/training/7/4545.png 7
 
 ---
 
+# ⚡ Быстрый запуск
+
+cd PerceptronClassifier
+
+javac -cp ".;lib\stdlib.jar" -d out src\*.java
+
+cd datasets\digits
+
+java -cp "..\..\out;..\..\lib\stdlib.jar" ImageClassifier digits-training60K.txt digits-testing10K.txt
+
+
 # ⚙️ Компиляция
 
 Перейти в корень проекта:
@@ -724,16 +735,6 @@ javac -cp ".;lib\stdlib.jar" -d out src\Perceptron.java src\MultiPerceptron.java
 ```
 
 ---
-
-# ⚡ Быстрый запуск
-
-cd PerceptronClassifier
-
-javac -cp ".;lib\stdlib.jar" -d out src\*.java
-
-cd datasets\digits
-
-java -cp "..\..\out;..\..\lib\stdlib.jar" ImageClassifier digits-training60K.txt digits-testing10K.txt
 
 # 🚀 Запуск
 
