@@ -1,172 +1,56 @@
-# Perceptron Image Classifier in Java
+# Image Classification in Java (Perceptron, Logistic Regression, MLP, CNN)
 
 ![Java](https://img.shields.io/badge/language-Java-blue)
 ![Machine Learning](https://img.shields.io/badge/topic-machine--learning-green)
-![Algorithm](https://img.shields.io/badge/algorithm-perceptron-orange)
-![Dataset](https://img.shields.io/badge/dataset-MNIST-lightgrey)
+![Image Classification](https://img.shields.io/badge/task-image--classification-orange)
+![Dataset](https://img.shields.io/badge/dataset-digits-lightgrey)
 
-Проект реализует классификатор изображений на основе алгоритма Perceptron,
-который используется для распознавания различных категорий изображений
-(цифры, предметы, символы, звуки и т.д.).
+Учебный проект по **классификации изображений на Java**.
 
-Алгоритм обучается на изображениях и пытается определить класс изображения (цифра, животное, объект и т.д.).
+Проект начался с реализации **MultiPerceptron** для задания **Princeton COS126 – Image Classification**, а затем был расширен более современными моделями:
 
-Проект основан на задании **Princeton COS126 – Image Classification**.
-
-Проект демонстрирует:
-
-- объектно-ориентированное программирование
-- реализацию ML-алгоритма
-- извлечение признаков из изображений
-- многоклассовую классификацию
+- **MultiPerceptron**
+- **Logistic Regression**
+- **MLP (Multi-Layer Perceptron)**
+- **CNN (Convolutional Neural Network)**
 
 ---
 
-# 📷 Пример изображений
+# 📌 Что реализовано
 
-Пример входных данных из датасета **MNIST**:
+## Основной Java-проект (`src/`)
+В основной части проекта реализованы:
 
-| Digit | Image |
-|------|------|
-| 0 | ![](datasets/digits/digits/testing/0/7846.png) |
-| 5 | ![](datasets/digits/digits/testing/5/5571.png) |
-| 3 | ![](datasets/digits/digits/testing/3/7398.png) |
+- `Perceptron.java` — бинарный perceptron
+- `MultiPerceptron.java` — многоклассовая классификация (One-vs-All)
+- `LogisticRegression.java` — многоклассовая логистическая регрессия
+- `MLP.java` — простая нейронная сеть
+- `ImageClassifier.java` — единый pipeline для обучения и тестирования
 
-Каждое изображение преобразуется в **вектор признаков размером 784 (28×28)**.
+Поддерживаемые режимы запуска:
 
-**Примечание:** в GitHub-репозиторий распакованная папка `datasets/digits/digits/` не включена, поэтому эти изображения могут не отображаться прямо на странице репозитория. Локально они используются для маленьких тестовых запусков, если папка `digits/` подготовлена отдельно.
+- `perceptron`
+- `logreg`
+- `mlp`
 
----
+## Отдельный CNN-проект (`cnn-java/`)
+Для сверточной нейронной сети добавлен отдельный Maven-проект:
 
-# 🧠 Алгоритм
+- `cnn-java/pom.xml`
+- `cnn-java/src/main/java/CnnDigits.java`
 
-Используется **Multiclass Perceptron (One-vs-All)**.
-
-Идея:
-
-1. Для каждого класса создаётся отдельный perceptron
-2. Каждый perceptron обучается распознавать **свой класс**
-3. При классификации выбирается perceptron с максимальной оценкой
-
-При обучении используется правило обновления весов:
-
-```text
-если prediction ≠ label:
-    weights[label] += x
-    weights[predicted] -= x
-````
-
-При предсказании выбирается perceptron с **максимальной взвешенной суммой**.
+CNN вынесена отдельно, потому что использует **Maven + DL4J**, а не ручную компиляцию через `javac -cp ...`.
 
 ---
 
-# 🧠 Архитектура алгоритма
+# 🧠 Реализованные модели
 
-```mermaid
-flowchart LR
-    A[Изображение 28x28] --> B[Извлечение признаков]
-    B --> C[Вектор признаков 784]
-    C --> D[MultiPerceptron]
-
-    D --> P0[Perceptron класс 0]
-    D --> P1[Perceptron класс 1]
-    D --> P2[Perceptron класс 2]
-    D --> P3[...]
-    D --> P9[Perceptron класс 9]
-
-    P0 --> S0[Взвешенная сумма]
-    P1 --> S1
-    P2 --> S2
-    P9 --> S9
-
-    S0 --> M[Выбор максимума]
-    S1 --> M
-    S2 --> M
-    S9 --> M
-
-    M --> O[Предсказанный класс]
-```
-
-### Что показывает схема
-
-1. изображение **28×28**
-2. преобразуется в **784-мерный вектор признаков**
-3. каждый perceptron обучается распознавать **один класс**
-4. выбирается perceptron с **максимальной weighted sum**
-
-Это стратегия **One-vs-All**.
-
----
-
-# 📊 Результаты
-
-| Dataset   | Training Size | Test Size | Error Rate |
-| --------- | ------------: | --------: | ---------: |
-| digits    |        60 000 |    10 000 | **0.1293** |
-| fashion   |        60 000 |    10 000 |     0.2204 |
-| Kuzushiji |        60 000 |    10 000 |     0.4587 |
-| animals   |        60 000 |    12 000 |     0.7328 |
-| music     |        50 000 |    10 000 |     0.5479 |
-| fruit     |        30 000 |     6 000 | **0.1361** |
-
-Чем меньше **error rate**, тем лучше классификация.
-
----
-
-# 📊 Матрица ошибок (Confusion Matrix)
-
-Пример матрицы ошибок для классификации цифр:
-
-```text
-Predicted →
-        0   1   2   3   4   5   6   7   8   9
-True
-0      970   0   2   0   1   3   3   0   1   0
-1        0 1125   2   1   0   1   2   1   3   0
-2        5   2 1010   3   2   0   3   6   1   0
-3        1   0   5  990   0   4   0   4   3   3
-...
-```
-
-Она показывает:
-
-* где алгоритм ошибается чаще всего
-* какие цифры путаются
-
-Например:
-
-```text
-6 → 0
-5 → 8
-7 → 9
-```
-
-Это типичные ошибки для perceptron.
-
----
-
-# 🧩 Визуализация весов perceptron
-
-Каждый perceptron имеет **784 веса**, которые можно представить как изображение **28×28**.
-
-Пример визуализации:
-
-```text
-████████░░░░░░░░████████
-████░░░░░░░░░░░░░░░░████
-██░░░░░░████████░░░░░░██
-██░░░░████████████░░░░██
-██░░░░██░░░░░░░░██░░░░██
-██░░░░████████████░░░░██
-██░░░░░░████████░░░░░░██
-████░░░░░░░░░░░░░░░░████
-████████░░░░░░░░████████
-```
-
-Это показывает:
-
-* какие пиксели **важны для классификации**
-* perceptron фактически изучает **шаблон цифры**
+| Model | Description |
+|------|-------------|
+| MultiPerceptron | линейная модель One-vs-All |
+| Logistic Regression | вероятностная линейная модель |
+| MLP | простая полносвязная нейронная сеть |
+| CNN | сверточная нейронная сеть для изображений |
 
 ---
 
@@ -178,6 +62,8 @@ PerceptronClassifier
 ├─ src
 │   ├─ Perceptron.java
 │   ├─ MultiPerceptron.java
+│   ├─ LogisticRegression.java
+│   ├─ MLP.java
 │   └─ ImageClassifier.java
 │
 ├─ lib
@@ -186,36 +72,109 @@ PerceptronClassifier
 ├─ out
 │   └─ compiled classes
 │
-└─ datasets
-    ├─ digits
-    │   ├─ digits.jar
-    │   ├─ training.zip
-    │   ├─ testing.zip
-    │   ├─ digits-training5.txt
-    │   ├─ digits-training10.txt
-    │   ├─ digits-training20.txt
-    │   ├─ digits-training30.txt
-    │   ├─ digits-training40.txt
-    │   ├─ digits-training50.txt
-    │   ├─ digits-training100.txt
-    │   ├─ digits-training6K.txt
-    │   ├─ digits-training60K.txt
-    │   ├─ digits-testing3.txt
-    │   ├─ digits-testing10.txt
-    │   ├─ digits-testing20.txt
-    │   ├─ digits-testing30.txt
-    │   ├─ digits-testing40.txt
-    │   ├─ digits-testing50.txt
-    │   ├─ digits-testing100.txt
-    │   ├─ digits-testing1K.txt
-    │   └─ digits-testing10K.txt
-    │
-    ├─ animals
-    ├─ fashion
-    ├─ Kuzushiji
-    ├─ music
-    └─ fruit
+├─ datasets
+│   ├─ digits
+│   │   ├─ digits.jar
+│   │   ├─ training.zip
+│   │   ├─ testing.zip
+│   │   ├─ digits-training5.txt
+│   │   ├─ digits-training10.txt
+│   │   ├─ digits-training20.txt
+│   │   ├─ digits-training30.txt
+│   │   ├─ digits-training40.txt
+│   │   ├─ digits-training50.txt
+│   │   ├─ digits-training100.txt
+│   │   ├─ digits-training6K.txt
+│   │   ├─ digits-training60K.txt
+│   │   ├─ digits-testing3.txt
+│   │   ├─ digits-testing10.txt
+│   │   ├─ digits-testing20.txt
+│   │   ├─ digits-testing30.txt
+│   │   ├─ digits-testing40.txt
+│   │   ├─ digits-testing50.txt
+│   │   ├─ digits-testing100.txt
+│   │   ├─ digits-testing1K.txt
+│   │   └─ digits-testing10K.txt
+│   │
+│   ├─ animals
+│   ├─ fashion
+│   ├─ Kuzushiji
+│   ├─ music
+│   └─ fruit
+│
+└─ cnn-java
+   ├─ pom.xml
+   └─ src
+      └─ main
+         └─ java
+            └─ CnnDigits.java
+````
+---
+
+# 🧠 Алгоритм
+
+В основной части проекта используется **Multiclass Perceptron (One-vs-All)**.
+
+Идея алгоритма:
+
+1. Для каждого класса создаётся отдельный perceptron
+2. Каждый perceptron обучается распознавать **свой класс**
+3. При классификации выбирается perceptron с **максимальной оценкой**
+
+Обучение выполняется по правилу обновления весов:
+
 ```
+если prediction ≠ label:
+
+weights[label] += x
+weights[predicted] -= x
+```
+
+Где:
+
+* `x` — вектор признаков изображения
+* `label` — правильный класс
+* `predicted` — предсказанный класс
+
+Таким образом модель постепенно учится **различать классы изображений**.
+
+---
+
+# 🧠 Архитектура алгоритма
+
+```mermaid
+flowchart LR
+    A[Image 28x28] --> B[Feature Extraction]
+    B --> C[Vector 784]
+
+    C --> D[MultiPerceptron]
+
+    D --> P0[Perceptron class 0]
+    D --> P1[Perceptron class 1]
+    D --> P2[Perceptron class 2]
+    D --> P9[Perceptron class 9]
+
+    P0 --> S0[Score]
+    P1 --> S1
+    P2 --> S2
+    P9 --> S9
+
+    S0 --> M[Max Score]
+    S1 --> M
+    S2 --> M
+    S9 --> M
+
+    M --> O[Predicted class]
+```
+
+### Что происходит
+
+1️⃣ изображение **28×28**
+2️⃣ преобразуется в **784-мерный вектор признаков**
+3️⃣ каждый perceptron обучается распознавать **один класс**
+4️⃣ выбирается perceptron с **максимальной оценкой**
+
+Это стратегия **One-vs-All**.
 
 ---
 
@@ -223,298 +182,225 @@ PerceptronClassifier
 
 ## `Perceptron.java`
 
-Класс `Perceptron` реализует **бинарный perceptron**, который работает с двумя метками: `+1` и `-1`.
+Класс `Perceptron` реализует **бинарный perceptron**, который работает с двумя метками:
 
-### Что делает класс
+```
++1
+-1
+```
 
-* хранит количество входов `n`
-* хранит массив весов `weights`
-* вычисляет **взвешенную сумму**
-* предсказывает класс (`+1` или `-1`)
-* обновляет веса при ошибке классификации
+### Основные функции
 
-### Основные методы
+* хранит массив весов
+* вычисляет взвешенную сумму
+* предсказывает класс
+* обновляет веса при ошибке
 
-* `weightedSum(double[] x)` — вычисляет скалярное произведение весов и входного вектора
-* `predict(double[] x)` — возвращает `+1`, если сумма положительная, иначе `-1`
-* `train(double[] x, int label)` — изменяет веса, если предсказание неверное
+Основные методы:
 
-### Идея обучения
+```
+weightedSum()
+predict()
+train()
+```
 
-Если perceptron ошибся, веса обновляются по правилу:
+Если perceptron ошибается, веса обновляются:
 
-```text
+```
 weights[i] += label * x[i]
 ```
 
-Этот класс является **базовым строительным блоком** всего проекта.
+Этот класс является **базовым строительным блоком модели**.
 
 ---
 
 ## `MultiPerceptron.java`
 
-Класс `MultiPerceptron` расширяет идею бинарного perceptron до **многоклассовой классификации**.
+Класс `MultiPerceptron` реализует **многоклассовую классификацию**.
 
-Используется стратегия **One-vs-All**:
+Используется стратегия:
 
-* для каждого класса создаётся отдельный perceptron
-* каждый perceptron отвечает за свой класс
-* итоговый класс выбирается по максимальной взвешенной сумме
-
-### Что делает класс
-
-* создаёт массив из `m` perceptron-ов
-* предсказывает класс среди нескольких вариантов
-* обучает только два perceptron-а при ошибке:
-
-  * неправильный класс штрафуется
-  * правильный класс усиливается
-
-### Основные методы
-
-* `predictMulti(double[] x)` — выбирает класс с максимальной оценкой
-* `trainMulti(double[] x, int label)` — обучает модель на одном примере
-* `numberOfClasses()` — возвращает число классов
-* `numberOfInputs()` — возвращает размер входного вектора
-
-### Логика обновления
-
-Если предсказание неверное:
-
-```text
-perceptrons[predicted].train(x, -1)
-perceptrons[label].train(x, +1)
+```
+One-vs-All
 ```
 
-Таким образом модель постепенно учится различать классы.
+То есть:
+
+* для каждого класса создаётся отдельный perceptron
+* каждый perceptron пытается распознать **свой класс**
+
+При ошибке обновляются два perceptron:
+
+```
+perceptrons[predicted] -= x
+perceptrons[label] += x
+```
+
+Основные методы:
+
+```
+predictMulti()
+trainMulti()
+numberOfClasses()
+numberOfInputs()
+```
+
+---
+
+## `LogisticRegression.java`
+
+Этот класс реализует **многоклассовую логистическую регрессию**.
+
+Особенности:
+
+* используется функция **softmax**
+* модель предсказывает **вероятности классов**
+* веса обучаются методом **градиентного спуска**
+
+Логистическая регрессия лучше perceptron, потому что:
+
+* оптимизирует функцию потерь
+* работает со **стохастическим градиентом**
+
+---
+
+## `MLP.java`
+
+Класс `MLP` реализует **простую нейронную сеть**.
+
+Структура сети:
+
+```
+Input layer (784)
+Hidden layer
+Output layer (10)
+```
+
+Используются:
+
+* **ReLU** или **sigmoid** в скрытом слое
+* **softmax** на выходе
+
+Обучение происходит через:
+
+```
+backpropagation
+```
 
 ---
 
 ## `ImageClassifier.java`
 
-Класс `ImageClassifier` — это **главный класс проекта**, который связывает загрузку данных, извлечение признаков, обучение и тестирование.
+Это **главный класс проекта**.
 
-### Что делает класс
+Он объединяет:
 
-* читает тренировочный и тестовый наборы данных
-* загружает изображения
-* преобразует изображения в векторы признаков
-* обучает `MultiPerceptron`
-* вычисляет итоговую ошибку на тестовой выборке
+* загрузку данных
+* извлечение признаков
+* обучение модели
+* тестирование
 
-### Извлечение признаков
+### Что делает программа
 
-Метод `extractFeatures(Picture picture)` преобразует изображение в одномерный массив признаков.
-
-В текущей реализации:
-
-* используется размер изображения `width × height`
-* каждый пиксель переводится в число
-* берётся только значение **красного канала**:
-
-```java
-color.getRed() / 255.0
-```
-
-В результате изображение преобразуется в вектор длины:
-
-```text
-width * height
-```
-
-Для изображений `28×28` это **784 признака**.
-
-### Обучение
-
-В `main()`:
-
-1. считываются данные из training-файла
-2. для каждого изображения извлекаются признаки
-3. создаётся `MultiPerceptron`
-4. модель обучается в течение нескольких эпох
-
-В коде используется:
-
-```java
-int epochs = 5;
-```
-
-То есть весь тренировочный набор проходит через обучение **5 раз**.
-
-### Тестирование
-
-После обучения программа:
-
-* считывает тестовые изображения
-* предсказывает класс
-* сравнивает ответ с правильной меткой
-* считает долю ошибок
-
-Финальный результат выводится как:
-
-```text
-test error rate = ...
-```
+1️⃣ читает training-файл
+2️⃣ загружает изображения
+3️⃣ извлекает признаки
+4️⃣ обучает модель
+5️⃣ тестирует модель
+6️⃣ вычисляет `test error rate`
 
 ---
 
 # 🔗 Связь между классами
 
-Логика проекта устроена так:
+Архитектура проекта выглядит так:
 
-```text
+```
 ImageClassifier
-    ↓
-извлекает признаки из изображений
-    ↓
-передаёт их в MultiPerceptron
-    ↓
-MultiPerceptron использует набор объектов Perceptron
-    ↓
-Perceptron вычисляет сумму, предсказывает и обновляет веса
+        │
+        ▼
+extractFeatures()
+        │
+        ▼
+vector (784 features)
+        │
+        ▼
+Model
+ │      │       │
+ ▼      ▼       ▼
+Perceptron  LogisticRegression  MLP
+        │
+        ▼
+prediction
 ```
 
-То есть:
+### Логика работы
 
-* `Perceptron.java` — базовая бинарная модель
-* `MultiPerceptron.java` — многоклассовая оболочка над несколькими perceptron-ами
-* `ImageClassifier.java` — полный pipeline: данные → обучение → тест → метрика
+1️⃣ `ImageClassifier` читает изображение
+2️⃣ преобразует его в **вектор признаков**
+3️⃣ передаёт его выбранной модели
+
+Модель:
+
+* вычисляет оценки классов
+* выбирает **максимальную**
+
+После тестирования программа выводит:
+
+```
+test error rate
+```
+---
+
+# 🖼 Как представляются изображения
+
+В основном проекте изображение преобразуется в одномерный вектор признаков длины:
+
+```text
+width * height
+```
+
+Для изображения `28×28` это:
+
+```text
+784 признака
+```
+
+В `ImageClassifier.java` используется яркость пикселя, нормализованная в диапазон `[0, 1]`.
 
 ---
 
-# 📦 Датасеты и файлы изображений
+# 📂 Формат данных для digits
 
-Полные датасеты изображений не включены в проект в виде отдельных распакованных наборов для всех коллекций, поскольку они занимают большой объём.
+Для датасета `digits` в проекте используются **два способа хранения изображений**.
 
-В проекте используются:
+## 1. Полные наборы через `digits.jar`
 
-- `.txt`-файлы со списками изображений и меток
-- `.jar`-архивы с изображениями
-- `.zip`-архивы с PNG-файлами для маленьких тестов
+Файлы:
 
-Для датасета `digits` изображения представлены двумя способами:
+* `digits-training6K.txt`
+* `digits-training60K.txt`
+* `digits-testing1K.txt`
+* `digits-testing10K.txt`
 
-- через архив `digits.jar` (используется для больших запусков)
-- через архивы `training.zip` и `testing.zip` (используются для маленьких тестов)
-
-Важно: некоторые старые архивные ссылки Princeton могут быть недоступны и открываться с сообщением:
-
-```text
-Not Found
-The requested URL was not found on this server.
-```
-
-Поэтому в README лучше не полагаться на старую архивную ссылку, а просто указывать, что проект основан на задании **Princeton COS126 – Image Classification**.
-
----
-
-# ⚠️ Важно: распакованная папка `digits/`
-
-Некоторые маленькие тестовые наборы (например `digits-training10.txt`, `digits-testing10.txt` и другие небольшие `.txt` файлы) используют **обычные относительные пути к PNG-изображениям**:
-
-```text
-digits/training/1/99.png     1
-digits/training/9/19.png     9
-digits/training/0/69.png     0
-digits/training/3/98.png     3
-```
-
-Такие пути предполагают наличие распакованной папки:
-
-```text
-datasets/digits/digits/
-```
-
-в которой находятся каталоги:
-
-```text
-training/
-testing/
-```
-
-⚠️ Важно: распаковка архивов `training.zip` и `testing.zip`
-
-Пример распаковки:
-
-Windows (PowerShell)
-
-Expand-Archive training.zip
-Expand-Archive testing.zip
-
-Linux / macOS
-
-unzip training.zip
-unzip testing.zip
-
-## Как работает полный запуск
-
-Для полного запуска датасета используются файлы:
-
-```text
-digits-training60K.txt
-digits-testing10K.txt
-```
-
-Они используют другой формат путей:
+используют пути вида:
 
 ```text
 jar:file:digits.jar!/training/7/4545.png   7
 jar:file:digits.jar!/training/5/49785.png  5
 ```
 
-В этом случае изображения читаются **напрямую из архива**
+Это означает, что изображения читаются **напрямую из архива**:
 
 ```text
 datasets/digits/digits.jar
 ```
 
-Поэтому для полноценного запуска **распаковывать изображения не требуется**.
+Для таких запусков **распаковка не нужна**.
 
-## Итог
-
-В репозитории используются:
-
-- `.txt` файлы с путями к изображениям
-- `.jar` архивы с изображениями датасетов
-- `.zip` архивы с PNG-файлами для маленьких тестов
-
-Архивы `training.zip` и `testing.zip` позволяют хранить изображения компактно и избегать размещения десятков тысяч PNG-файлов напрямую в репозитории.
-
-Распакованная папка `digits/` используется только для некоторых маленьких тестов, чтобы получить эти папки, необходимо распаковать архивы:
-
-training.zip
-testing.zip
-
-в папку `datasets/digits`.
-
-После распаковки архивов структура будет выглядеть так:
-
-```
-datasets/digits
-│
-├─ digits.jar
-├─ training.zip
-├─ testing.zip
-│
-├─ digits/
-│   ├─ training/
-│   │   ├─ 0/
-│   │   ├─ 1/
-│   │   └─ ...
-│   │
-│   └─ testing/
-│       ├─ 0/
-│       ├─ 1/
-│       └─ ...
-
-```
 ---
 
-# 📂 Формат хранения данных в `digits`
-
-Для датасета `digits` используются **два формата путей к изображениям**.
-
-## 1. Маленькие тестовые наборы
+## 2. Маленькие тесты и CNN через распакованные PNG
 
 Файлы вроде:
 
@@ -533,342 +419,395 @@ datasets/digits
 * `digits-testing50.txt`
 * `digits-testing100.txt`
 
-содержат обычные относительные пути вида:
+используют обычные относительные пути вида:
 
 ```text
-digits/training/1/99.png     1
-digits/training/9/19.png     9
-digits/training/0/69.png     0
-digits/training/3/98.png     3
+digits/training/1/99.png 1
+digits/training/9/19.png 9
+digits/training/0/69.png 0
 ```
 
-Для таких файлов требуется распакованная папка:
-
-```text
-datasets/digits/digits/
-```
-
-с подпапками:
-
-```text
-training/
-testing/
-```
-
-То есть для маленьких тестов изображения читаются **напрямую из папки `digits`**.
-
-Размеры архивов для маленьких тестов:
-
-training.zip — 21 091 776 bytes  
-testing.zip — 3 520 235 bytes
-
-## 2. Полные наборы данных
-
-Файлы:
-
-* `digits-training6K.txt`
-* `digits-training60K.txt`
-* `digits-testing1K.txt`
-* `digits-testing10K.txt`
-
-используют ссылки вида:
-
-```text
-jar:file:digits.jar!/training/7/4545.png   7
-jar:file:digits.jar!/training/5/49785.png  5
-jar:file:digits.jar!/training/7/39605.png  7
-jar:file:digits.jar!/training/0/1926.png   0
-```
-
-Для них требуется наличие файла:
-
-```text
-datasets/digits/digits.jar
-```
-
-В этом случае изображения читаются **напрямую из архива `digits.jar`**, без необходимости распаковки на диск.
-
-## Вывод
-
-Таким образом, для датасета `digits` в проекте сохранены оба варианта:
-
-* папка `digits/` — для маленьких тестов
-* `digits.jar` — для больших запусков
-
-Полностью удалять папку `digits/` нельзя, если требуется поддержка маленьких `.txt`-наборов.
-
-**Примечание:** в локальной рабочей папке эти два варианта могут использоваться одновременно.
+Для таких файлов нужна **распакованная папка с PNG**.
 
 ---
 
-# 📁 Пример структуры датасета `digits`
+# 📦 Почему `training.zip` и `testing.zip` важны
 
-Локально структура может выглядеть так:
+Файлы:
+
+* `datasets/digits/training.zip`
+* `datasets/digits/testing.zip`
+
+содержат **распаковываемые PNG-изображения**, которые нужны:
+
+* для маленьких тестовых запусков
+* для локального просмотра изображений
+* для **CNN**, если сеть читает изображения из папок `training/0..9` и `testing/0..9`
+
+То есть:
+
+* для `digits.jar` распаковка не нужна
+* для **CNN распаковка нужна**
+
+---
+
+# ✅ Как правильно распаковать ZIP для CNN
+
+Нужно распаковать оба архива:
+
+* `training.zip`
+* `testing.zip`
+
+в папку:
+
+```text
+datasets/digits/
+```
+
+После правильной распаковки структура должна получиться такой:
 
 ```text
 datasets/digits
 │
 ├─ digits.jar
-├─ digits-training5.txt
-├─ digits-training10.txt
-├─ digits-training20.txt
-├─ digits-training30.txt
-├─ digits-training40.txt
-├─ digits-training50.txt
-├─ digits-training100.txt
-├─ digits-training6K.txt
-├─ digits-training60K.txt
-├─ digits-testing3.txt
-├─ digits-testing10.txt
-├─ digits-testing20.txt
-├─ digits-testing30.txt
-├─ digits-testing40.txt
-├─ digits-testing50.txt
-├─ digits-testing100.txt
-├─ digits-testing1K.txt
-├─ digits-testing10K.txt
-└─ digits/
-    ├─ training/
-    └─ testing/
+├─ training.zip
+├─ testing.zip
+│
+├─ training/
+│   ├─ 0/
+│   ├─ 1/
+│   ├─ 2/
+│   ├─ 3/
+│   ├─ 4/
+│   ├─ 5/
+│   ├─ 6/
+│   ├─ 7/
+│   ├─ 8/
+│   └─ 9/
+│
+└─ testing/
+    ├─ 0/
+    ├─ 1/
+    ├─ 2/
+    ├─ 3/
+    ├─ 4/
+    ├─ 5/
+    ├─ 6/
+    ├─ 7/
+    ├─ 8/
+    └─ 9/
 ```
 
-В GitHub-репозитории папка `digits/` не включена, но `.txt` и `digits.jar` присутствуют.
+## Windows PowerShell
+
+Из папки `datasets/digits`:
+
+```powershell
+Expand-Archive training.zip
+Expand-Archive testing.zip
+```
+
+## Linux / macOS
+
+```bash
+unzip training.zip
+unzip testing.zip
+```
 
 ---
 
-# 📊 Размер проекта и датасетов
+⚠️ Важно: для CNN папки должны называться именно так
 
-По текущему состоянию проекта:
+Для `CnnDigits.java` ожидается структура:
 
 ```text
-Всего файлов:
-70103 файлов    373 856 612 байт
-101 папок
+training/
+  0/
+  1/
+  ...
+  9/
+
+testing/
+  0/
+  1/
+  ...
+  9/
 ```
 
-Полный размер папки `PerceptronClassifier` составляет:
+Если после распаковки архив создаёт лишнюю вложенную папку, например:
 
-* **373 856 612 байт**
-* **≈ 356.54 MB**
+```text
+datasets/digits/digits/training
+datasets/digits/digits/testing
+```
 
-В проект включены `.jar`-архивы датасетов, из которых изображения читаются напрямую:
+то путь в `CnnDigits.java` нужно либо:
 
-| Dataset   |     Archive Size |
-| --------- | ---------------: |
-| digits    | 25 555 621 bytes |
-| animals   | 64 467 935 bytes |
-| fashion   | 74 587 518 bytes |
-| Kuzushiji | 63 740 740 bytes |
-| music     | 46 839 464 bytes |
-| fruit     | 61 070 494 bytes |
-
-Размеры файлов в папках датасетов:
-
-| Dataset   | Additional Files |
-| --------- | ---------------: |
-| animals   | 68 295 953 bytes |
-| fashion   | 78 297 536 bytes |
-| Kuzushiji | 67 450 758 bytes |
-| music     | 50 019 480 bytes |
-| fruit     | 62 978 510 bytes |
-
-Это показывает, что использование `.jar`-архивов позволяет хранить проект компактнее, чем при размещении всех изображений в распакованном виде.
-
-**Примечание:** приведённые выше общий размер и количество файлов относятся к локальной рабочей версии проекта, где распакованная папка `datasets/digits/digits/` присутствовала. В GitHub-репозитории эта папка включена в формате zip, поэтому опубликованная версия проекта меньше по размеру.
+* исправить,
+* либо переместить папки на уровень выше.
 
 ---
 
-# 📄 Формат файлов датасета
+# 🧪 Реальные размеры набора для CNN
 
-Файлы `*.txt` описывают изображения и их метки.
+В локальном запуске CNN использовалось:
 
-Пример строки с обычным путём:
+* `training`: **60000 images**
+* `testing`: **10062 images**
 
-```text
-digits/training/1/99.png 1
+Команды подсчёта на Windows:
+
+```cmd
+dir /s /b "C:\ … your files … \*.png" | find /c /v ""
+dir /s /b "C:\ … your files … \digits\testing\*.png" | find /c /v ""
 ```
 
-Пример строки с путём внутри архива:
+Принцип работы:
 
-```text
-jar:file:digits.jar!/training/7/4545.png 7
-```
-
-Каждая строка содержит:
-
-```text
-путь_к_изображению  метка_класса
-```
-
-Программа:
-
-1. читает путь к изображению
-2. загружает его
-3. извлекает признаки
-4. обучает модель
+* `dir /s /b` выводит все `.png` файлы по одному пути на строку
+* `find /c /v ""` считает количество непустых строк
+* одна строка = один файл
 
 ---
 
-# ⚡ Быстрый запуск
+# 📊 Результаты на датасете digits
 
-cd PerceptronClassifier
+| Model               | Test Error Rate |   Accuracy |
+| ------------------- | --------------: | ---------: |
+| MultiPerceptron     |          0.1293 |     87.07% |
+| Logistic Regression |          0.1039 |     89.61% |
+| MLP                 |          0.0313 |     96.87% |
+| CNN                 |      **0.0167** | **98.33%** |
 
+## Как считалась accuracy
+
+```text
+accuracy = 1 - error_rate
+```
+
+Пример:
+
+```text
+1 - 0.0167 = 0.9833 = 98.33%
+```
+
+---
+
+# 📈 Интерпретация результатов
+
+Эксперименты на `digits` показывают, что качество модели растёт по мере усложнения архитектуры:
+
+```text
+MultiPerceptron → Logistic Regression → MLP → CNN
+```
+
+Причина:
+
+* **Perceptron** и **Logistic Regression** — более простые модели
+* **MLP** умеет находить нелинейные зависимости
+* **CNN** лучше всего подходит для изображений, потому что учитывает пространственную структуру, локальные признаки, контуры и формы
+
+---
+
+# 🧪 Результаты базовой perceptron-модели на других датасетах
+
+| Dataset   | Training Size | Test Size | Error Rate |
+| --------- | ------------: | --------: | ---------: |
+| digits    |        60 000 |    10 000 | **0.1293** |
+| fashion   |        60 000 |    10 000 |     0.2204 |
+| Kuzushiji |        60 000 |    10 000 |     0.4587 |
+| animals   |        60 000 |    12 000 |     0.7328 |
+| music     |        50 000 |    10 000 |     0.5479 |
+| fruit     |        30 000 |     6 000 | **0.1361** |
+
+---
+
+# ⚙️ Компиляция основного проекта
+
+Из корня проекта:
+
+```cmd
 javac -cp ".;lib\stdlib.jar" -d out src\*.java
-
-cd datasets\digits
-
-java -cp "..\..\out;..\..\lib\stdlib.jar" ImageClassifier digits-training60K.txt digits-testing10K.txt
-
-
-# ⚙️ Компиляция
-
-Перейти в корень проекта:
-
-```text
-cd PerceptronClassifier
-```
-
-Скомпилировать:
-
-```text
-javac -cp ".;lib\stdlib.jar" -d out src\Perceptron.java src\MultiPerceptron.java src\ImageClassifier.java
 ```
 
 ---
 
-# 🚀 Запуск
+# 🚀 Запуск основного проекта
 
-## Пример: digits dataset
+Перейти в папку датасета:
 
-```text
-cd datasets\digits
+```cmd
+cd /d "C:\ … your files …  \datasets\digits"
+```
 
+## MultiPerceptron
+
+```cmd
 java -cp "..\..\out;..\..\lib\stdlib.jar" ImageClassifier digits-training60K.txt digits-testing10K.txt
 ```
 
-## Пример: animals dataset
+или явно:
 
-```text
-cd datasets\animals
+```cmd
+java -cp "..\..\out;..\..\lib\stdlib.jar" ImageClassifier digits-training60K.txt digits-testing10K.txt perceptron
+```
 
-java -cp "..\..\out;..\..\lib\stdlib.jar" ImageClassifier animals-training60K.txt animals-testing12K.txt
+## Logistic Regression
+
+```cmd
+java -cp "..\..\out;..\..\lib\stdlib.jar" ImageClassifier digits-training60K.txt digits-testing10K.txt logreg
+```
+
+## MLP
+
+```cmd
+java -cp "..\..\out;..\..\lib\stdlib.jar" ImageClassifier digits-training60K.txt digits-testing10K.txt mlp
 ```
 
 ---
 
-# Пример результата
+# 🧠 CNN: отдельный Maven-проект
+
+CNN находится в папке:
 
 ```text
-test error rate = 0.1293
+cnn-java/
 ```
 
-Это означает, что примерно **12.9% изображений классифицированы неправильно**.
+Используемый стек:
+
+* Maven
+* Deeplearning4j
+* ND4J
+* DataVec
 
 ---
 
-# Пример маленького теста
+# 📁 Структура CNN-проекта
 
 ```text
-java -cp "..\..\out;..\..\lib\stdlib.jar" ImageClassifier digits-training10.txt digits-testing10.txt
+cnn-java
+├─ pom.xml
+└─ src
+   └─ main
+      └─ java
+         └─ CnnDigits.java
 ```
-
-Результат может быть:
-
-```text
-test error rate = 1.0
-```
-
-Это нормально, потому что обучающая выборка слишком маленькая.
-
-**Примечание:** этот маленький тест требует локально подготовленной распакованной папки `datasets/digits/digits/`, которая указана выше.
 
 ---
 
-# Большой тест
+# 🛠 Как подготовить папку `cnn-java`
 
-```text
-java -cp "..\..\out;..\..\lib\stdlib.jar" ImageClassifier digits-training60K.txt digits-testing10K.txt
+Из корня проекта:
+
+```cmd
+cd /d "C: … your files …  \PerceptronClassifier"
+mkdir cnn-java
+mkdir cnn-java\src
+mkdir cnn-java\src\main
+mkdir cnn-java\src\main\java
 ```
 
-Ожидаемый результат:
+После этого нужно создать файлы:
 
-```text
-test error rate ≈ 0.12 – 0.14
-```
-
-Этот запуск работает через `digits.jar` и не требует распаковки изображений на диск.
+* `cnn-java\pom.xml`
+* `cnn-java\src\main\java\CnnDigits.java`
 
 ---
 
-# 📈 Сравнение с Part 1 задания
+# 📦 Как установить Maven
 
-Для датасета:
+## 1. Скачать Maven
 
-```text
-digits-training60K.txt + digits-testing10K.txt
-```
-
-Ожидаемый результат из **Part 1**:
+Официальный сайт:
 
 ```text
-test error rate = 0.136
+https://maven.apache.org/download.cgi
 ```
 
-Мой лучший результат:
+Нужно скачать **Binary zip archive**, например:
 
 ```text
-test error rate = 0.1293
+apache-maven-3.9.13-bin.zip
 ```
 
-### Вывод
+## 2. Распаковать
 
-Реализация perceptron:
+Например сюда:
 
-* соответствует требованиям задания
-* **слегка превосходит результат из Part 1**
+```text
+D:\Tools\apache-maven-3.9.13
+```
 
-Это подтверждает корректность реализации алгоритма.
+Важно, чтобы существовал файл:
+
+```text
+D:\Tools\apache-maven-3.9.13\bin\mvn.cmd
+```
+
+## 3. Проверить Maven
+
+```cmd
+"D:\Tools\apache-maven-3.9.13\bin\mvn.cmd" -v
+```
+
+Пример:
+
+```text
+Apache Maven 3.9.13
+Java version: 21
+```
 
 ---
 
-# 📊 Реалистичный предел perceptron
+# ▶️ Запуск CNN
 
-| Метод               | Ошибка      |
-| ------------------- | ----------- |
-| perceptron          | 0.11 – 0.14 |
-| хороший perceptron  | ~0.10       |
-| logistic regression | ~0.08       |
-| нейронная сеть      | 0.03 – 0.05 |
-| CNN                 | < 0.01      |
+Из папки `cnn-java`:
 
-Полученный результат:
-
-```text
-0.1293
+```cmd
+cd /d "C:\ … your files …  \PerceptronClassifier\cnn-java"
+"C:\Tools\apache-maven-3.9.13\bin\mvn.cmd" compile
+"C:\Tools\apache-maven-3.9.13\bin\mvn.cmd" exec:java
 ```
 
-Это **нормальный результат для perceptron**.
+## Что делает Maven
+
+### `compile`
+
+Команда:
+
+```cmd
+"D:\Tools\apache-maven-3.9.13\bin\mvn.cmd" compile
+```
+
+делает следующее:
+
+* читает `pom.xml`
+* скачивает нужные библиотеки
+* компилирует `src\main\java\CnnDigits.java`
+
+### `exec:java`
+
+Команда:
+
+```cmd
+"D:\Tools\apache-maven-3.9.13\bin\mvn.cmd" exec:java
+```
+
+делает следующее:
+
+* запускает главный Java-класс, указанный в `pom.xml`
+* обучает CNN
+* выводит метрики качества
 
 ---
 
-# 🤖 Современные методы
+# ✅ Итоговые результаты CNN на digits
 
-Алгоритм **Perceptron** был предложен в **1958 году**.
+После 2 эпох CNN показала:
 
-Сегодня для распознавания изображений чаще используют:
-
-| Метод                              | Typical Error |
-| ---------------------------------- | ------------- |
-| Perceptron                         | 0.11 – 0.14   |
-| Logistic Regression                | ~0.08         |
-| Neural Network (MLP)               | 0.03 – 0.05   |
-| Convolutional Neural Network (CNN) | < 0.01        |
-
-Однако perceptron важен, потому что он:
-
-* показывает основы машинного обучения
-* демонстрирует линейную классификацию
-* является базовым элементом нейронных сетей
+* **Accuracy:** 98.33%
+* **Test Error Rate:** 0.0167
 
 ---
 
@@ -885,46 +824,18 @@ test error rate = 0.1293
 
 ---
 
-# ✅ Особенности реализации
-
-* изображения преобразуются в вектор признаков длины `width * height`
-* в качестве признака каждого пикселя используется только красный канал (`red / 255.0`)
-* обучение выполняется в течение 5 эпох
-* многоклассовая классификация реализована через стратегию One-vs-All
-* итоговая метрика качества — `test error rate`
-
----
-
-# 🧾 Итог
-
-Проект демонстрирует реализацию **многоклассового классификатора perceptron для распознавания изображений**.
-
-Основные результаты эксперимента:
-
-```text
-dataset: MNIST digits
-training: 60000
-testing: 10000
-error rate: 0.1293
-```
-
-Полученный результат соответствует ожидаемому качеству алгоритма perceptron и немного превосходит эталонный результат из задания.
-
-Проект иллюстрирует:
-
-* извлечение признаков из изображений
-* обучение модели на размеченных данных
-* многоклассовую классификацию
-* реализацию алгоритма perceptron
-
----
-
 # 👨‍💻 Автор
 
 **Amanzhol**
 
-Учебный проект по Java и Machine Learning
-Реализация многоклассового классификатора изображений на основе Perceptron
+Учебный проект по Java и Machine Learning.
+
+Реализованы:
+
+* Perceptron
+* Logistic Regression
+* MLP
+* CNN
 
 ````
 # ⭐ Если проект оказался полезным
